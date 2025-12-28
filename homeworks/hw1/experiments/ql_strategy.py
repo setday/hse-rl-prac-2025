@@ -6,7 +6,7 @@ import numpy as np
 class QLearningAgent:
     """Custom Q-learning agent implementation based on prac3."""
     
-    def __init__(self, action_size, alpha=0.1, gamma=0.99, epsilon=0.05):
+    def __init__(self, action_size, alpha=0.1, gamma=0.99, epsilon=0.05, epsilon_decay=1.0, epsilon_update_freq=100):
         """
         Initialize Q-learning agent.
         
@@ -20,6 +20,9 @@ class QLearningAgent:
         self.alpha = alpha
         self.gamma = gamma
         self.epsilon = epsilon
+        self.epsilon_decay = epsilon_decay
+        self.epsilon_update_freq = epsilon_update_freq
+        self.next_epsilon_update = epsilon_update_freq
 
         self.action_size = action_size
         
@@ -59,6 +62,15 @@ class QLearningAgent:
         """Select action for given state using epsilon-greedy strategy."""
         return self.select_action_eps_greedy(state)
     
+    def _update_epsilon(self):
+        """Decay epsilon after certain number of updates."""
+        self.next_epsilon_update -= 1
+        if self.next_epsilon_update <= 0:
+            self.epsilon *= self.epsilon_decay
+            self.next_epsilon_update = self.epsilon_update_freq
+    
     def learn(self, state, action, reward, next_state, done):
         """Learn from experience."""
         self.update_Q(state, action, reward, next_state, done)
+        
+        self._update_epsilon()
